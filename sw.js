@@ -1,8 +1,9 @@
 /* Service worker — cache-first, so the list opens with no signal in the shop. */
-const CACHE = 'fodmap-shop-v1';
+const CACHE = 'fodmap-shop-v2';
 const ASSETS = [
   './',
   './index.html',
+  './menu.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',

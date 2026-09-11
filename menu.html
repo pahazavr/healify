@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Week Menu — Kristina &amp; Pavel</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#2f6f3e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shopping">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<style>
+  :root {
+    --ink:#1a1a1a; --soft:#666; --rule:#ddd; --band:#f7f7f4;
+    --k:#f2f5f0; --p:#eef1f6; --accent:#2f6f3e;
+    --kbar:#5c8a4a; --pbar:#4a6f96;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--ink); margin: 0; max-width: 760px; margin-inline: auto;
+    font-size: 16px; line-height: 1.4;
+    padding: calc(14px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right))
+             calc(40px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 9px; }
+  h1 { font-size: 20px; margin: 0 0 3px; }
+  .sub { color: var(--soft); font-size: 13px; }
+
+  /* ---- page switch ---- */
+  nav.pages { display: flex; gap: 8px; margin: 12px 0 4px; }
+  nav.pages a {
+    flex: 1; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 600;
+    padding: 9px 0; border: 1px solid var(--rule); border-radius: 8px; color: var(--soft); background: #fff;
+  }
+  nav.pages a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---- day chips ---- */
+  .days {
+    position: sticky; top: 0; z-index: 6; background: #fff;
+    display: flex; gap: 5px; align-items: center; padding: 10px 0 9px; margin-bottom: 2px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .days .dlabel {
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--soft); font-weight: 700; margin-right: 2px;
+  }
+  .days button {
+    font: inherit; font-size: 15px; font-weight: 700; flex: 1 1 0; min-width: 0;
+    padding: 8px 0; border: 1px solid var(--rule); border-radius: 8px;
+    background: #fff; color: var(--soft); cursor: pointer;
+  }
+  .days button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .days button:active { transform: scale(.96); }
+  /* small dot under whichever day is today */
+  .days button.now { position: relative; border-color: var(--accent); color: var(--accent); }
+  .days button.now::after {
+    content: ""; position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+  }
+  .days button.now.on { color: #fff; }
+  .days button.now.on::after { background: #fff; }
+  /* jump back to today after browsing ahead */
+  #today {
+    font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap;
+    flex: 0 0 auto; padding: 7px 8px; margin-left: 5px;
+    border: 1px solid var(--accent); border-radius: 8px;
+    background: #fff; color: var(--accent); cursor: pointer;
+  }
+  #today[hidden] { display: none; }
+
+  /* ---- "now" banner ---- */
+  #nowbar {
+    position: sticky; top: 44px; z-index: 5; display: flex; align-items: baseline; gap: 9px;
+    background: var(--accent); color: #fff; border-radius: 9px;
+    padding: 9px 12px; margin: 10px 0 2px; cursor: pointer; text-align: left;
+  }
+  .nowwhat { flex: 1; }
+  #nowbar[hidden] { display: none; }
+  .nowlab {
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    white-space: nowrap; opacity: .85;
+  }
+  .nowwhat { font-size: 15px; font-weight: 700; line-height: 1.3; }
+  .nowwhat em { color: rgba(255,255,255,.8); font-weight: 400; font-size: 13.5px; }
+
+  /* ---- meal blocks ---- */
+  .meal { margin-top: 16px; }
+  .mhead { display: flex; align-items: baseline; gap: 9px; border-bottom: 1px solid var(--rule); padding-bottom: 5px; }
+  /* the meal happening right now */
+  .mhead.live { border-bottom-color: var(--accent); border-bottom-width: 2px; }
+  .mhead.live .time, .mhead.live .mname { color: var(--accent); }
+  .nowtag {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+    background: var(--accent); color: #fff; border-radius: 4px; padding: 2px 6px;
+  }
+  .time { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+  .mname {
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--soft); font-weight: 700;
+  }
+  .mnote { margin-left: auto; font-size: 12px; color: var(--soft); }
+
+  .dish { padding: 10px 12px; border-radius: 9px; margin-top: 8px; }
+  .dish.her { background: var(--k); border-left: 4px solid var(--kbar); }
+  .dish.his { background: var(--p); border-left: 4px solid var(--pbar); }
+  .who { font-size: 11.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--soft); }
+  .dname { font-weight: 700; font-size: 16.5px; margin: 1px 0 3px; }
+  .ing { font-size: 14.5px; }
+  .ing b { font-weight: 700; }
+  .kcal { font-size: 13px; color: var(--soft); margin-top: 4px; }
+  em { font-style: normal; color: var(--soft); }
+
+  /* ---- pick-one options ---- */
+  details.opt {
+    border: 1px solid var(--rule); border-radius: 9px; margin-top: 7px; background: #fff; overflow: hidden;
+  }
+  details.opt[open] { background: var(--band); }
+  summary {
+    padding: 10px 12px; cursor: pointer; font-weight: 600; font-size: 15.5px;
+    display: flex; align-items: center; gap: 8px; list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "＋"; color: var(--soft); font-weight: 400; font-size: 17px;
+  }
+  details[open] summary::after { content: "－"; }
+  .onum {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 21px; height: 21px; min-width: 21px; border-radius: 50%;
+    background: var(--ink); color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .obody { padding: 0 12px 11px; }
+  .olabel { flex: 1; }
+
+  /* ---- choose-this circle ---- */
+  .pickbtn {
+    width: 24px; height: 24px; min-width: 24px; margin-left: auto;
+    border: 1.5px solid #bbb; border-radius: 50%; background: #fff;
+    position: relative; cursor: pointer;
+  }
+  .pickbtn::after {
+    content: ""; position: absolute; left: 7px; top: 4px;
+    width: 7px; height: 12px; border: solid #fff;
+    border-width: 0 2.5px 2.5px 0; transform: rotate(42deg); opacity: 0;
+  }
+  details.picked .pickbtn { background: var(--accent); border-color: var(--accent); }
+  details.picked .pickbtn::after { opacity: 1; }
+  details.picked { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  details.picked summary .olabel { font-weight: 700; }
+  /* the ＋/－ affordance sits after the circle */
+  summary::after { margin-left: 8px; }
+  .orow { font-size: 14.5px; padding: 7px 9px; border-radius: 7px; margin-top: 5px; }
+  .orow.her { background: var(--k); }
+  .orow.his { background: var(--p); }
+
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    padding: 1px 5px; border: 1px solid #bbb; border-radius: 3px; margin-right: 5px;
+    vertical-align: 1px; background: #fff;
+  }
+  .tag-k { background: var(--k); } .tag-p { background: var(--p); }
+
+  footer {
+    margin-top: 26px; padding-top: 12px; border-top: 2px solid var(--ink);
+    font-size: 13px; color: var(--soft);
+  }
+  footer b { color: var(--ink); }
+  footer p { margin: 0 0 7px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Week Menu</h1>
+  <div class="sub">Low FODMAP &nbsp;·&nbsp; Kristina &amp; Pavel &nbsp;·&nbsp; <span id="wd"></span></div>
+</header>
+
+<nav class="pages">
+  <a href="./index.html">Shopping list</a>
+  <a href="./menu.html" class="on">Menu</a>
+</nav>
+
+<div class="days"><span class="dlabel">Day</span><span id="days" style="display:flex;gap:5px;flex:1 1 auto;min-width:0"></span><button id="today" hidden>↩ Today</button></div>
+
+<div id="nowbar" hidden></div>
+
+<main id="out"></main>
+
+<footer>
+  <p><span class="tag tag-k">K</span><b>Kristina</b> — ≈ 1,680 kcal/day · protein 110–130 g</p>
+  <p><span class="tag tag-p">P</span><b>Pavel</b> — ≈ 2,410 kcal/day · protein ~175 g · gym 3×/wk, 18:00–19:30 · repeats lunch at dinner</p>
+  <p><b>PB</b> = peanut butter (100% peanuts) &nbsp;·&nbsp; <b>GF</b> = gluten-free</p>
+</footer>
+
+<script>
+// ---------- pick-one options (same choices every day) ----------
+const BREAKFAST = [
+  ["Oat bowl",
+   "40 g GF oats · 200 ml unsweetened almond milk · ½ firm banana · 15 g PB", "≈ 315 kcal",
+   "50 g <b>regular oats</b> · 200 ml <b>cow's milk</b> · ½ banana · 15 g PB · <b>25 g whey</b>", "≈ 520 kcal"],
+  ["Toast",
+   "2 slices GF bread · 30 g avocado · 30 g parmesan or cheddar", "≈ 305 kcal",
+   "2 slices <b>regular bread</b> · 30 g avocado · 20 g parmesan · <b>+ 3 scrambled eggs</b> in 1 tsp oil", "≈ 520 kcal"],
+  ["Tortilla",
+   "1 GF tortilla · 1 tsp PB · 1 tsp maple syrup · ½ sliced banana · cinnamon", "≈ 305 kcal",
+   "1 <b>regular wrap</b> · 1 tsp PB · 1 tsp maple · ½ banana · <b>+ 170 g Greek yogurt + 25 g whey</b>", "≈ 535 kcal"],
+  ["Scrambled eggs",
+   "2 eggs in 1 tsp olive oil · 15 g grated parmesan · 1 slice GF bread", "≈ 320 kcal",
+   "<b>3 eggs</b> in 1 tsp oil · 20 g parmesan · <b>2 slices regular bread · 30 g avocado</b>", "≈ 540 kcal"],
+  ["Overnight oats",
+   "4 tbsp GF oats · 1 tsp chia · 100 ml almond milk · 100 g Freelact · 1 tsp maple · 60 g blueberries", "≈ 285 kcal",
+   "<b>40 g regular oats</b> · 1 tsp chia · 100 ml <b>cow's milk</b> · <b>170 g Greek yogurt</b> · 1 tsp maple · 60 g blueberries · <b>25 g whey</b>", "≈ 525 kcal"],
+];
+
+const SNACK1 = [
+  ["Kiwi, walnuts &amp; parmesan",
+   "1 kiwi · 15 g walnuts · 25 g parmesan", "≈ 240 kcal",
+   "1 kiwi · <b>25 g walnuts · 30 g parmesan</b>", "≈ 325 kcal"],
+  ["Rice cakes &amp; PB",
+   "2 plain rice cakes · 20 g PB · ½ firm banana", "≈ 235 kcal",
+   "<b>3 rice cakes · 30 g PB</b> · ½ firm banana", "≈ 330 kcal"],
+  ["Yogurt &amp; blueberries",
+   "170 g Freelact yogurt · 1 tsp maple · 60 g blueberries · 15 g walnuts", "≈ 255 kcal",
+   "<b>300 g Greek yogurt</b> · 1 tsp maple · 60 g blueberries · <b>10 g walnuts</b>", "≈ 315 kcal"],
+];
+
+const SNACK2 = [
+  ["Banana &amp; PB",
+   "1 firm banana · 15 g PB", "≈ 190 kcal",
+   "1 banana · 20 g PB · <b>25 g whey</b> in water", "≈ 315 kcal"],
+  ["Homemade low FODMAP bar",
+   "1 bar <em>(see recipe)</em>", "≈ 215 kcal",
+   "1 bar <em>(any shop-bought)</em> · <b>+ 25 g whey</b> in water", "≈ 310 kcal"],
+  ["Yogurt, maple &amp; banana",
+   "170 g Freelact · 1 tsp maple · 1 small firm banana", "≈ 200 kcal",
+   "<b>340 g Greek yogurt</b> · 1 tsp maple · 1 small banana", "≈ 315 kcal"],
+  ["Smoothie",
+   "200 ml almond milk · ½ banana · 1 kiwi · 2 tbsp GF oats · 1 tsp maple", "≈ 200 kcal",
+   "<b>200 ml cow's milk</b> · ½ banana · 1 kiwi · 10 g oats · <b>25 g whey</b>", "≈ 325 kcal"],
+];
+
+// ---------- fixed lunches & dinners, per day ----------
+const DAYS = [
+  { lunch: { name:"Grilled beef liver",
+      k:"200 g liver + 1 tbsp olive oil · 85 g potato · salad: 50 g spinach, 50 g cucumber, 75 g carrot, lemon, 1 tsp oil", kk:"≈ 555 kcal",
+      p:"200 g liver + 1 tbsp oil · <b>175 g potato</b> · same salad · <b>+ 1 slice regular bread + 30 g avocado</b>", pk:"≈ 745 kcal" },
+    dinner: { name:"Omelette",
+      k:"2 eggs + 2 egg whites · 1 tsp oil · 25 g parmesan · 50 g bell pepper · 1 slice GF bread", kk:"≈ 410 kcal",
+      p:"<b>130 g liver</b> · 2 tsp oil · <b>115 g potato</b> · same salad · 30 g avocado", pk:"≈ 495 kcal" } },
+
+  { lunch: { name:"Chicken skillet",
+      k:"150 g chicken · 60 g zucchini · 50 g red pepper · 50 g carrot · 1 tbsp oil · 1 tsp mustard · lemon, oregano, paprika · 150 g cooked basmati", kk:"≈ 530 kcal",
+      p:"<b>200 g chicken</b> · same veg &amp; seasoning · <b>200 g cooked basmati + 30 g avocado</b>", pk:"≈ 760 kcal" },
+    dinner: { name:"Chicken tortilla",
+      k:"1 GF tortilla · 100 g chicken · 30 g avocado · 50 g cucumber", kk:"≈ 366 kcal",
+      p:"<b>130 g chicken</b> · same veg · 1 tsp oil · <b>150 g cooked basmati</b>", pk:"≈ 500 kcal" } },
+
+  { lunch: { name:"Shrimp rice noodles",
+      k:"60 g noodles (dry) · 200 g shrimp · 50 g red pepper · 50 g carrot · 60 g zucchini · 1 tbsp oil · tamari, ginger, lime", kk:"≈ 590 kcal",
+      p:"<b>80 g noodles (dry) · 250 g shrimp</b> · same veg · 1 tbsp oil", pk:"≈ 730 kcal" },
+    dinner: { name:"Yogurt bowl",
+      k:"<b>170 g Olympos Freelact</b> · 1 tsp maple · 60 g blueberries · 60 g kiwi · 3 tbsp GF oats · 25 g walnuts", kk:"≈ 364 kcal · 19 g protein",
+      p:"<b>50 g noodles (dry) · 200 g shrimp</b> · same veg · 2 tsp oil", pk:"≈ 500 kcal" } },
+
+  { lunch: { name:"Burger bowl",
+      k:"150 g lean beef · 75 g sweet potato · 60 g cooked quinoa · 30 g avocado · lettuce, cucumber, carrot · dressing: mustard, 1 tsp oil, ½ tsp maple, lemon", kk:"≈ 515 kcal",
+      p:"<b>200 g lean beef</b> · 75 g sweet potato · <b>150 g cooked quinoa</b> · 30 g avocado · same salad &amp; dressing", pk:"≈ 740 kcal" },
+    dinner: { name:"Cheese &amp; egg tortilla",
+      k:"1 GF tortilla · 25 g cheddar · 1 boiled egg · 30 g avocado · 50 g cucumber", kk:"≈ 379 kcal",
+      p:"<b>130 g beef</b> · 75 g sweet potato · <b>120 g cooked quinoa</b> · 30 g avocado · same salad", pk:"≈ 510 kcal" } },
+
+  { lunch: { name:"Pasta salad",
+      k:"200 g cooked GF pasta · 100 g tuna · 50 g cucumber · 40 g spinach · 50 g red pepper · 20 g olives · dressing: 1 tbsp oil, 1 tsp mustard, lemon, oregano", kk:"≈ 600 kcal",
+      p:"<em>chicken, not tuna:</em> <b>260 g cooked GF pasta · 140 g chicken breast</b> · same veg · 25 g olives · 2 tsp oil · same dressing", pk:"≈ 725 kcal" },
+    dinner: { name:"Fried eggs",
+      k:"2 sunny-side-up eggs · 1 tsp oil · 1 slice GF bread · 1 slice cheddar", kk:"≈ 356 kcal",
+      p:"<b>190 g cooked GF pasta · 85 g chicken breast</b> · same veg · 20 g olives · 1 tsp oil", pk:"≈ 495 kcal" } },
+
+  { lunch: { name:"Fish soup",
+      k:"200 g white fish · 85 g potato · 75 g carrot · 60 g zucchini · 1 tbsp oil · lemon, parsley, dill · 60 g GF bread", kk:"≈ 555 kcal",
+      p:"<b>250 g fish · 150 g potato</b> · same veg · 1 tbsp oil · <b>90 g regular bread</b>", pk:"≈ 750 kcal" },
+    dinner: { name:"Quinoa salad",
+      k:"120 g boiled quinoa · 50 g cucumber · 75 g carrot · 50 g red pepper · 25 g parmesan · 30 g avocado · 1 tsp oil + lemon", kk:"≈ 387 kcal",
+      p:"<b>200 g fish · 100 g potato</b> · same veg · 2 tsp oil · <b>60 g regular bread</b>", pk:"≈ 530 kcal" } },
+
+  { lunch: { name:"Grilled beef patty",
+      k:"150 g patty (no onion/garlic) · 150 g cooked basmati or quinoa · salad: 50 g spinach, 50 g cucumber, 75 g carrot, lemon, 1 tsp oil", kk:"≈ 535 kcal",
+      p:"<b>200 g patty · 200 g cooked rice or quinoa</b> · same salad", pk:"≈ 720 kcal" },
+    dinner: { name:"Yogurt bowl",
+      k:"As Day 3 — 170 g Freelact · 1 tsp maple · 60 g blueberries · 60 g kiwi · 3 tbsp GF oats · 25 g walnuts", kk:"≈ 364 kcal",
+      p:"<b>130 g patty · 150 g cooked rice or quinoa</b> · same salad · 30 g avocado", pk:"≈ 510 kcal" } },
+];
+
+// ---------- meal slots ----------
+// [key, time, label, start minute, end minute] — a slot is "now" from its start
+// until the next one begins; dinner runs to end of day.
+const SLOTS = [
+  ['bf', '07:30', 'Breakfast', 0,    10 * 60 + 30],
+  ['s1', '10:30', 'Snack 1',   630,  13 * 60 + 30],
+  ['lu', '13:30', 'Lunch',     810,  17 * 60],
+  ['s2', '17:00', 'Snack 2',   1020, 20 * 60 + 30],
+  ['di', '20:30', 'Dinner',    1230, 24 * 60],
+];
+
+function nowSlot() {
+  const n = new Date();
+  const m = n.getHours() * 60 + n.getMinutes();
+  for (const s of SLOTS) if (m >= s[3] && m < s[4]) return s[0];
+  return 'di';
+}
+
+// ---------- chosen options: persisted, auto-cleared each Monday ----------
+const PKEY = 'fodmap-menu-picks';
+
+// Monday of the current week, as YYYY-MM-DD — the stamp we store alongside picks.
+function weekStamp() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));   // back up to Monday
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+         + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function loadPicks() {
+  const week = weekStamp();
+  try {
+    const raw = JSON.parse(localStorage.getItem(PKEY) || '{}');
+    // A different Monday means a new week: drop last week's picks for good.
+    if (raw.week !== week) {
+      localStorage.setItem(PKEY, JSON.stringify({ week, picks: {} }));
+      return {};
+    }
+    return raw.picks || {};
+  } catch {
+    localStorage.setItem(PKEY, JSON.stringify({ week, picks: {} }));
+    return {};
+  }
+}
+
+function savePicks() {
+  localStorage.setItem(PKEY, JSON.stringify({ week: weekStamp(), picks }));
+}
+
+let picks = loadPicks();
+
+// ---------- render ----------
+function options(list, slot, day) {
+  const chosen = picks[day + slot];
+  return list.map((o, i) => {
+    const isPick = chosen === i;
+    return `
+    <details class="opt${isPick ? ' picked' : ''}" data-slot="${slot}" data-i="${i}">
+      <summary>
+        <span class="onum">${i + 1}</span>
+        <span class="olabel">${o[0]}</span>
+        <span class="pickbtn" role="button" tabindex="0"
+              aria-pressed="${isPick}" title="${isPick ? 'Chosen — tap to clear' : 'Choose this'}"></span>
+      </summary>
+      <div class="obody">
+        <div class="orow her"><span class="tag tag-k">K</span>${o[1]} <span class="kcal" style="display:inline">${o[2]}</span></div>
+        <div class="orow his"><span class="tag tag-p">P</span>${o[3]} <span class="kcal" style="display:inline">${o[4]}</span></div>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+function mealHead(key, time, name, note) {
+  const live = key === liveSlot;
+  return `<div class="mhead${live ? ' live' : ''}">
+    <span class="time">${time}</span>
+    <span class="mname">${name}</span>
+    ${live ? '<span class="nowtag">Now</span>' : ''}
+    ${note ? `<span class="mnote">${note}</span>` : ''}
+  </div>`;
+}
+
+function fixed(m, repeat) {
+  return `
+    <div class="dish her">
+      <div class="who">Kristina</div>
+      <div class="dname">${m.name}</div>
+      <div class="ing">${m.k}</div>
+      <div class="kcal">${m.kk}</div>
+    </div>
+    <div class="dish his">
+      <div class="who">Pavel${repeat ? ' — repeats lunch' : ''}</div>
+      <div class="ing">${m.p}</div>
+      <div class="kcal">${m.pk}</div>
+    </div>`;
+}
+
+function render(d) {
+  cur = d;
+  const day = DAYS[d];
+  const isToday = d === todayIdx;
+  liveSlot = isToday ? nowSlot() : null;      // only highlight "now" on today
+
+  document.getElementById('out').innerHTML = `
+    <section class="meal" id="m-bf">${mealHead('bf', '07:30', 'Breakfast', 'pick one')}${options(BREAKFAST, 'bf', d)}</section>
+    <section class="meal" id="m-s1">${mealHead('s1', '10:30', 'Snack 1', 'pick one')}${options(SNACK1, 's1', d)}</section>
+    <section class="meal" id="m-lu">${mealHead('lu', '13:30', 'Lunch')}${fixed(day.lunch, false)}</section>
+    <section class="meal" id="m-s2">${mealHead('s2', '17:00', 'Snack 2', 'pick one')}${options(SNACK2, 's2', d)}</section>
+    <section class="meal" id="m-di">${mealHead('di', '20:30', 'Dinner')}${fixed(day.dinner, true)}</section>`;
+
+  document.querySelectorAll('details.opt').forEach(el => {
+    const slot = el.dataset.slot, i = +el.dataset.i, key = openKey(slot, i);
+    if (openSet.has(key)) el.open = true;
+    el.addEventListener('toggle', () => el.open ? openSet.add(key) : openSet.delete(key));
+
+    // the tick toggles the choice without expanding the row
+    el.querySelector('.pickbtn').addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      togglePick(slot, i);
+    });
+    el.querySelector('.pickbtn').addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePick(slot, i); }
+    });
+  });
+
+  [...chips.children].forEach((b, i) => b.classList.toggle('on', i === d));
+  today.hidden = isToday;
+  banner();
+}
+
+function togglePick(slot, i) {
+  const k = cur + slot;
+  if (picks[k] === i) delete picks[k]; else picks[k] = i;
+  savePicks();
+  render(cur);
+}
+
+// "Now: Lunch" strip, plus what has been chosen for it
+function banner() {
+  if (!liveSlot) { bar.hidden = true; return; }
+  bar.hidden = false;
+  const s = SLOTS.find(x => x[0] === liveSlot);
+  const lists = { bf: BREAKFAST, s1: SNACK1, s2: SNACK2 };
+  let what;
+  if (liveSlot === 'lu')      what = DAYS[cur].lunch.name;
+  else if (liveSlot === 'di') what = DAYS[cur].dinner.name + ' <em>/ Pavel repeats lunch</em>';
+  else {
+    const c = picks[cur + liveSlot];
+    what = c === undefined
+      ? '<em>not chosen yet — tap a circle to pick</em>'
+      : lists[liveSlot][c][0];
+  }
+  bar.innerHTML = `<span class="nowlab">Now · ${s[2]}</span><span class="nowwhat">${what}</span>`;
+  bar.onclick = () => document.getElementById('m-' + liveSlot)
+    .scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------- setup ----------
+const WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const todayIdx = (new Date().getDay() + 6) % 7;   // getDay(): Sun=0 -> Mon=0
+const openKey = (slot, i) => slot + i;
+
+let cur = todayIdx, liveSlot = null;
+const openSet = new Set();
+const chips = document.getElementById('days');
+const today = document.getElementById('today');
+const bar = document.getElementById('nowbar');
+
+for (let i = 0; i < 7; i++) {
+  const b = document.createElement('button');
+  b.textContent = i + 1;
+  b.title = WD[i];
+  if (i === todayIdx) b.classList.add('now');
+  b.addEventListener('click', () => render(i));
+  chips.appendChild(b);
+}
+
+document.getElementById('wd').textContent =
+  new Date().toLocaleDateString(undefined, { weekday: 'long' }) + ' = Day ' + (todayIdx + 1);
+
+today.addEventListener('click', () => render(todayIdx));
+
+// Always open on today; the chips are there to look ahead.
+render(todayIdx);
+
+// Re-check the clock every minute, and when the app is brought back to the front,
+// so the "Now" highlight follows the day without a manual reload.
+setInterval(() => { if (cur === todayIdx && nowSlot() !== liveSlot) render(cur); }, 60000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    picks = loadPicks();      // a new week may have started while the app was closed
+    render(cur);
+  }
+});
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+
+</body>
+</html>

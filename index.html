@@ -44,6 +44,14 @@
   }
   button:active { background: #f0f0f0; }
 
+  nav.pages { display: flex; gap: 8px; margin: 12px 0 0; }
+  nav.pages a {
+    flex: 1; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 600;
+    padding: 9px 0; border: 1px solid var(--rule); border-radius: 8px; color: var(--soft); background: #fff;
+  }
+  nav.pages a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media print { nav.pages { display: none; } }
+
   h2 {
     font-size: 12.5px; text-transform: uppercase; letter-spacing: 1px;
     color: var(--soft); margin: 22px 0 6px; padding-bottom: 4px;
@@ -108,6 +116,11 @@
   <h1>Weekly Shopping List</h1>
   <div class="sub">Low FODMAP week menu &nbsp;·&nbsp; Kristina &amp; Pavel &nbsp;·&nbsp; 7 days, both of you</div>
 </header>
+
+<nav class="pages">
+  <a href="./index.html" class="on">Shopping list</a>
+  <a href="./menu.html">Menu</a>
+</nav>
 
 <div class="bar">
   <span class="count"><span id="done">0</span> / <span id="all">0</span></span>
