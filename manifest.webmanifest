@@ -1,7 +1,7 @@
 {
-  "name": "Low FODMAP Shopping List",
-  "short_name": "Shopping",
-  "description": "Weekly low FODMAP shopping list for Kristina & Pavel",
+  "name": "Healify",
+  "short_name": "Healify",
+  "description": "Low FODMAP week menu and shopping list for Kristina & Pavel",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

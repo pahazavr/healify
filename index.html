@@ -8,103 +8,137 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Shopping">
+<meta name="apple-mobile-web-app-title" content="Healify">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>Weekly Shopping List — Kristina &amp; Pavel</title>
+<title>Healify — Shopping List</title>
 <style>
   :root {
-    --ink:#1a1a1a; --soft:#666; --rule:#ddd; --band:#f7f7f4;
-    --k:#f2f5f0; --p:#eef1f6; --accent:#2f6f3e;
+    --ink:#16241c; --soft:#6b7770; --faint:#9aa5a0;
+    --rule:#e3e8e5; --band:#f4f7f5; --page:#eef2ef; --card:#fff;
+    --accent:#2f6f3e; --accent-dk:#245730; --accent-lt:#eaf3ec;
+    --k:#eef4ec; --p:#ecf0f6;
+    --shadow:0 1px 2px rgba(22,36,28,.05), 0 2px 8px rgba(22,36,28,.05);
+    --r:14px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: var(--ink); margin: 0;
-    padding: calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
-             calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
-    max-width: 760px; margin-inline: auto; font-size: 16px; line-height: 1.35;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink); margin: 0 auto; background: var(--page);
+    -webkit-font-smoothing: antialiased;
+    padding: 0 calc(13px + env(safe-area-inset-right))
+             calc(48px + env(safe-area-inset-bottom)) calc(13px + env(safe-area-inset-left));
+    max-width: 720px; font-size: 16px; line-height: 1.4;
   }
 
-  header { border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 4px; }
-  h1 { font-size: 21px; margin: 0 0 3px; }
-  .sub { color: var(--soft); font-size: 13.5px; }
-
-  .bar {
-    position: sticky; top: 0; z-index: 5; background: #fff;
-    padding: 9px 0 8px;
-    /* sits below the header, above the list */ border-bottom: 1px solid var(--rule);
-    display: flex; align-items: center; gap: 12px;
+  /* ---- brand header ---- */
+  header {
+    margin: 0 calc(-13px - env(safe-area-inset-left)) 14px calc(-13px - env(safe-area-inset-right));
+    padding: calc(20px + env(safe-area-inset-top)) 20px 40px;
+    background: linear-gradient(150deg, #35794a 0%, #2f6f3e 55%, #24582f 100%);
+    color: #fff;
   }
-  .count { font-weight: 700; font-size: 14px; white-space: nowrap; }
-  .track { flex: 1; height: 7px; background: #eee; border-radius: 4px; overflow: hidden; }
-  .fill { height: 100%; width: 0; background: var(--accent); transition: width .18s; }
-  button {
-    font: inherit; font-size: 13px; padding: 5px 11px; border: 1px solid var(--rule);
-    background: #fff; border-radius: 6px; color: var(--soft); cursor: pointer;
+  h1 {
+    font-size: 25px; margin: 0; letter-spacing: -.5px; font-weight: 800;
+    display: flex; align-items: center; gap: 9px;
   }
-  button:active { background: #f0f0f0; }
+  /* leaf mark, drawn in CSS so there is no extra request */
+  .mark {
+    width: 25px; height: 25px; border-radius: 50% 12% 50% 50%;
+    background: rgba(255,255,255,.92); transform: rotate(-12deg); flex: 0 0 auto;
+  }
+  .sub { color: rgba(255,255,255,.82); font-size: 12.5px; margin-top: 5px; }
 
-  nav.pages { display: flex; gap: 8px; margin: 12px 0 0; }
+  nav.pages { display: flex; gap: 7px; margin: -32px 0 0; position: relative; z-index: 7; }
   nav.pages a {
-    flex: 1; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 600;
-    padding: 9px 0; border: 1px solid var(--rule); border-radius: 8px; color: var(--soft); background: #fff;
+    flex: 1; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 650;
+    padding: 11px 0; border-radius: 11px; color: var(--soft); background: var(--card);
+    box-shadow: var(--shadow); transition: color .15s, background .15s;
   }
-  nav.pages a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  nav.pages a.on { background: var(--ink); color: #fff; }
   @media print { nav.pages { display: none; } }
 
-  h2 {
-    font-size: 12.5px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--soft); margin: 22px 0 6px; padding-bottom: 4px;
-    border-bottom: 1px solid var(--rule);
+  /* ---- progress bar ---- */
+  .bar {
+    position: sticky; top: 0; z-index: 5; background: var(--page);
+    padding: 10px 0 9px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 6px 10px -8px rgba(22,36,28,.28);
   }
-  h2 .sum { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .count { font-weight: 800; font-size: 13.5px; white-space: nowrap; color: var(--soft); }
+  .count #done { color: var(--accent); }
+  .track { flex: 1; height: 8px; background: #dfe6e1; border-radius: 5px; overflow: hidden; }
+  .fill {
+    height: 100%; width: 0; border-radius: 5px;
+    background: linear-gradient(90deg, var(--accent) 0%, #4a9159 100%);
+    transition: width .22s ease;
+  }
+  button {
+    font: inherit; font-size: 12.5px; font-weight: 650; padding: 7px 12px; border: 0;
+    background: var(--card); border-radius: 9px; color: var(--soft); cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  button:active { transform: scale(.97); }
 
-  ul { list-style: none; margin: 0; padding: 0; }
-  li { border-bottom: 1px solid #f0f0f0; }
+  /* ---- sections as cards ---- */
+  h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--faint); font-weight: 800; margin: 18px 4px 7px; padding: 0;
+  }
+  h2 .sum { float: right; text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+  ul {
+    list-style: none; margin: 0; padding: 0;
+    background: var(--card); border-radius: var(--r); box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  li + li { border-top: 1px solid var(--rule); }
   label {
-    display: flex; align-items: baseline; gap: 11px;
-    padding: 9px 4px; cursor: pointer;
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 12px 14px; cursor: pointer; transition: background .12s;
   }
   label:hover { background: var(--band); }
+  label:active { background: var(--accent-lt); }
   input[type=checkbox] {
     appearance: none; -webkit-appearance: none;
-    width: 21px; height: 21px; min-width: 21px; margin: 0;
-    border: 1.5px solid #aaa; border-radius: 4px; background: #fff;
+    width: 22px; height: 22px; min-width: 22px; margin: 0;
+    border: 1.5px solid #c3ccc7; border-radius: 7px; background: #fff;
     position: relative; top: 3px; cursor: pointer;
+    transition: background .15s, border-color .15s;
   }
   input[type=checkbox]:checked { background: var(--accent); border-color: var(--accent); }
   input[type=checkbox]:checked::after {
-    content: ""; position: absolute; left: 6px; top: 2px;
+    content: ""; position: absolute; left: 6.5px; top: 2.5px;
     width: 6px; height: 11px; border: solid #fff;
     border-width: 0 2.5px 2.5px 0; transform: rotate(42deg);
   }
   .txt { flex: 1; }
-  .name { font-weight: 600; }
-  .qty { color: var(--soft); font-size: 14px; }
-  .qty b { color: var(--ink); font-weight: 600; }
+  .name { font-weight: 650; letter-spacing: -.1px; }
+  .qty { color: var(--soft); font-size: 13.5px; }
+  .qty b { color: var(--ink); font-weight: 700; }
   .tag {
-    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px;
-    padding: 1px 5px; border: 1px solid #ccc; border-radius: 3px; margin-left: 5px;
-    vertical-align: 1px;
+    display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .4px;
+    padding: 2px 6px; border-radius: 5px; margin-left: 5px;
+    vertical-align: 1px; background: var(--band); color: var(--soft);
   }
   .tag-k { background: var(--k); }
   .tag-p { background: var(--p); }
-  .tag-c { background: #fdf6e3; }
-  label:has(:checked) .txt { text-decoration: line-through; color: #aaa; }
-  label:has(:checked) .name { color: #aaa; }
+  .tag-c { background: #fbf3e0; color: #8a6d3b; }
+  label:has(:checked) .txt { text-decoration: line-through; color: var(--faint); }
+  label:has(:checked) .name { color: var(--faint); }
   label:has(:checked) .tag { opacity: .35; }
 
   footer {
-    margin-top: 26px; padding-top: 12px; border-top: 2px solid var(--ink);
-    font-size: 13.5px; color: var(--soft);
+    margin-top: 16px; background: var(--card); border-radius: var(--r);
+    padding: 13px 14px; box-shadow: var(--shadow);
+    font-size: 12.5px; color: var(--soft);
   }
   footer b { color: var(--ink); }
-  footer p { margin: 0 0 9px; }
-  .total { font-size: 17px; color: var(--ink); font-weight: 700; margin-bottom: 12px; }
+  footer p { margin: 0; }
 
   @media print {
-    .bar { display: none; }
-    body { padding: 0; font-size: 11px; }
+    .bar, header { display: none; }
+    body { padding: 0; font-size: 11px; background: #fff; }
+    ul { box-shadow: none; border: 1px solid #ccc; }
     label { padding: 4px 2px; }
     input[type=checkbox] { width: 13px; height: 13px; min-width: 13px; }
   }
@@ -113,8 +147,8 @@
 <body>
 
 <header>
-  <h1>Weekly Shopping List</h1>
-  <div class="sub">Low FODMAP week menu &nbsp;·&nbsp; Kristina &amp; Pavel &nbsp;·&nbsp; 7 days, both of you</div>
+  <h1><span class="mark" aria-hidden="true"></span>Healify</h1>
+  <div class="sub">Shopping list &nbsp;·&nbsp; Low FODMAP week &nbsp;·&nbsp; Kristina &amp; Pavel &nbsp;·&nbsp; 7 days, both of you</div>
 </header>
 
 <nav class="pages">
@@ -205,7 +239,8 @@
 </footer>
 
 <script>
-  const KEY = 'fodmap-shop-v1';
+  const KEY = 'healify-shop-v1';
+  const OLD_KEY = 'fodmap-shop-v1';       // pre-rename; carry ticks over once
   const boxes = [...document.querySelectorAll('input[type=checkbox]')];
   const done = document.getElementById('done');
   const all  = document.getElementById('all');
@@ -214,7 +249,14 @@
   boxes.forEach((b, i) => b.dataset.i = i);
   all.textContent = boxes.length;
 
-  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  // Migrate the old key so a rename mid-shop doesn't clear someone's ticks.
+  if (localStorage.getItem(KEY) === null && localStorage.getItem(OLD_KEY) !== null) {
+    localStorage.setItem(KEY, localStorage.getItem(OLD_KEY));
+    localStorage.removeItem(OLD_KEY);
+  }
+
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { saved = []; }
   saved.forEach(i => { if (boxes[i]) boxes[i].checked = true; });
 
   function sync() {

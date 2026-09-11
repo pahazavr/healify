@@ -1,5 +1,5 @@
-/* Service worker — cache-first, so the list opens with no signal in the shop. */
-const CACHE = 'fodmap-shop-v2';
+/* Healify service worker — cache-first, so the app opens with no signal in the shop. */
+const CACHE = 'healify-v5';
 const ASSETS = [
   './',
   './index.html',
