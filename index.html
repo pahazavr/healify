@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#2f6f3e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shopping">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>Weekly Shopping List — Kristina &amp; Pavel</title>
+<style>
+  :root {
+    --ink:#1a1a1a; --soft:#666; --rule:#ddd; --band:#f7f7f4;
+    --k:#f2f5f0; --p:#eef1f6; --accent:#2f6f3e;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--ink); margin: 0;
+    padding: calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+             calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    max-width: 760px; margin-inline: auto; font-size: 16px; line-height: 1.35;
+  }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 4px; }
+  h1 { font-size: 21px; margin: 0 0 3px; }
+  .sub { color: var(--soft); font-size: 13.5px; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 5; background: #fff;
+    padding: 9px 0 8px;
+    /* sits below the header, above the list */ border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .count { font-weight: 700; font-size: 14px; white-space: nowrap; }
+  .track { flex: 1; height: 7px; background: #eee; border-radius: 4px; overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--accent); transition: width .18s; }
+  button {
+    font: inherit; font-size: 13px; padding: 5px 11px; border: 1px solid var(--rule);
+    background: #fff; border-radius: 6px; color: var(--soft); cursor: pointer;
+  }
+  button:active { background: #f0f0f0; }
+
+  h2 {
+    font-size: 12.5px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--soft); margin: 22px 0 6px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h2 .sum { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { border-bottom: 1px solid #f0f0f0; }
+  label {
+    display: flex; align-items: baseline; gap: 11px;
+    padding: 9px 4px; cursor: pointer;
+  }
+  label:hover { background: var(--band); }
+  input[type=checkbox] {
+    appearance: none; -webkit-appearance: none;
+    width: 21px; height: 21px; min-width: 21px; margin: 0;
+    border: 1.5px solid #aaa; border-radius: 4px; background: #fff;
+    position: relative; top: 3px; cursor: pointer;
+  }
+  input[type=checkbox]:checked { background: var(--accent); border-color: var(--accent); }
+  input[type=checkbox]:checked::after {
+    content: ""; position: absolute; left: 6px; top: 2px;
+    width: 6px; height: 11px; border: solid #fff;
+    border-width: 0 2.5px 2.5px 0; transform: rotate(42deg);
+  }
+  .txt { flex: 1; }
+  .name { font-weight: 600; }
+  .qty { color: var(--soft); font-size: 14px; }
+  .qty b { color: var(--ink); font-weight: 600; }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    padding: 1px 5px; border: 1px solid #ccc; border-radius: 3px; margin-left: 5px;
+    vertical-align: 1px;
+  }
+  .tag-k { background: var(--k); }
+  .tag-p { background: var(--p); }
+  .tag-c { background: #fdf6e3; }
+  label:has(:checked) .txt { text-decoration: line-through; color: #aaa; }
+  label:has(:checked) .name { color: #aaa; }
+  label:has(:checked) .tag { opacity: .35; }
+
+  footer {
+    margin-top: 26px; padding-top: 12px; border-top: 2px solid var(--ink);
+    font-size: 13.5px; color: var(--soft);
+  }
+  footer b { color: var(--ink); }
+  footer p { margin: 0 0 9px; }
+  .total { font-size: 17px; color: var(--ink); font-weight: 700; margin-bottom: 12px; }
+
+  @media print {
+    .bar { display: none; }
+    body { padding: 0; font-size: 11px; }
+    label { padding: 4px 2px; }
+    input[type=checkbox] { width: 13px; height: 13px; min-width: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Weekly Shopping List</h1>
+  <div class="sub">Low FODMAP week menu &nbsp;·&nbsp; Kristina &amp; Pavel &nbsp;·&nbsp; 7 days, both of you</div>
+</header>
+
+<div class="bar">
+  <span class="count"><span id="done">0</span> / <span id="all">0</span></span>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <button id="reset">Clear all</button>
+</div>
+
+<h2>Meat &amp; fish</h2>
+<ul>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Lean beef mince</span> <span class="qty">— need 960 g · buy <b>1 kg</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Chicken breast</span> <span class="qty">— need 805 g · buy <b>800 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">White fish fillet</span> <span class="qty">— need 650 g · buy <b>650 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Shrimp</span> <span class="qty">— need 650 g · buy <b>650 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Beef liver</span> <span class="qty">— need 530 g · buy <b>550 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Tuna in water</span><span class="tag tag-k">K</span> <span class="qty">— <b>2 cans</b> × 180 g (menu uses 100 g)</span></span></label></li>
+</ul>
+
+<h2>Dairy, eggs &amp; protein</h2>
+<ul>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Greek yogurt 2% strained</span><span class="tag tag-p">P</span> <span class="qty">— <b>2 tubs</b> (1 kg each) · 1 tub if he picks yogurt twice, not 5×</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Olympos Freelact yogurt</span><span class="tag tag-k">K</span> <span class="qty">— <b>4 packs</b> (340 g = 2 × 170 g cups each)</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Parmesan</span> <span class="qty">— need 280 g · buy <b>300 g wedge</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Cheddar</span> <span class="qty">— need 45 g · buy <b>smallest block</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Cow's milk</span><span class="tag tag-p">P</span> <span class="qty">— need 700 ml · buy <b>1 L</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Almond milk, unsweetened</span><span class="tag tag-k">K</span> <span class="qty">— need 700 ml · buy <b>1 L</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Eggs</span> <span class="qty">— <b>20</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Whey protein</span><span class="tag tag-p">P</span><span class="tag tag-c">lasts ~4 wks</span> <span class="qty">— need 225 g · buy <b>1 tub</b></span></span></label></li>
+</ul>
+
+<h2>Produce</h2>
+<ul>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Carrot</span> <span class="qty">— <b>1.2 kg</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Cucumber</span> <span class="qty">— need 750 g · buy <b>3</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Potato</span> <span class="qty">— need 710 g · buy <b>800 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Blueberries</span> <span class="qty">— <b>600 g</b> (fresh or frozen)</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Red bell pepper</span> <span class="qty">— need 550 g · buy <b>4</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Zucchini</span> <span class="qty">— need 540 g · buy <b>3 medium</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Spinach</span> <span class="qty">— need 420 g · buy <b>2 × 250 g bags</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Avocado</span> <span class="qty">— need 420 g flesh · buy <b>3</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Sweet potato</span> <span class="qty">— need 225 g · buy <b>1 medium</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Bananas</span> <span class="qty">— <b>14</b> · firm and green-tipped, never ripe</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Lettuce</span> <span class="qty">— need 120 g · buy <b>1 head</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Kiwi</span> <span class="qty">— <b>8</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Lemons</span> <span class="qty">— <b>3–4</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Fresh ginger</span> <span class="qty">— <b>1 small piece</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Parsley &amp; dill</span> <span class="qty">— <b>1 bunch each</b></span></span></label></li>
+</ul>
+
+<h2>Grains &amp; bread</h2>
+<ul>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Basmati rice</span> <span class="qty">— need 334 g dry · buy <b>500 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">GF oats</span><span class="tag tag-k">K</span> <span class="qty">— need 245 g · buy <b>500 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Regular oats</span><span class="tag tag-p">P</span> <span class="qty">— need 150 g · buy <b>500 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">GF pasta</span> <span class="qty">— need 275 g dry (both of you) · buy <b>500 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Rice noodles</span> <span class="qty">— need 190 g dry · buy <b>250 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Quinoa</span> <span class="qty">— need 150 g dry · buy <b>250 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Regular bread</span><span class="tag tag-p">P</span> <span class="qty">— need 7 slices + 150 g · buy <b>1 loaf 680 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">GF bread</span><span class="tag tag-k">K</span> <span class="qty">— need 6 slices + 60 g · buy <b>1 loaf</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">GF tortillas</span><span class="tag tag-k">K</span> <span class="qty">— need <b>3</b> · buy 1 pack</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Regular wraps</span><span class="tag tag-p">P</span> <span class="qty">— need <b>1</b> · buy 1 pack</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Rice cakes, plain</span> <span class="qty">— need <b>10</b> · buy 1 pack</span></span></label></li>
+</ul>
+
+<h2>Pantry <span class="sum">mostly one-off</span></h2>
+<ul>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Olive oil</span><span class="tag tag-c">carries over</span> <span class="qty">— need 260 ml · buy <b>500 ml</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Peanut butter, 100% peanuts</span> <span class="qty">— need 270 g · buy <b>1 × 350 g jar</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Walnuts</span> <span class="qty">— need 225 g · buy <b>250 g</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Maple syrup</span><span class="tag tag-c">carries over</span> <span class="qty">— need ~100 ml · buy <b>250 ml</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Olives</span> <span class="qty">— need 65 g · buy <b>1 small jar</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Mustard</span><span class="tag tag-c">carries over</span> <span class="qty">— <b>1 jar</b> · check label: no onion or garlic powder</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Tamari</span><span class="tag tag-c">carries over</span> <span class="qty">— need 20 ml · buy <b>1 bottle</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Chia seeds</span><span class="tag tag-c">carries over</span> <span class="qty">— need 10 g · buy <b>1 small bag</b></span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Protein bars, shop-bought</span><span class="tag tag-p">P</span> <span class="qty">— need <b>2</b> · buy 1 pack</span></span></label></li>
+  <li><label><input type="checkbox"><span class="txt"><span class="name">Dried oregano, paprika, cinnamon</span><span class="tag tag-c">carries over</span> <span class="qty">— <b>if not already in</b></span></span></label></li>
+</ul>
+
+<footer>
+  <p><span class="tag tag-k">K</span> Kristina only (gluten-free / lactose-free) &nbsp;·&nbsp;
+     <span class="tag tag-p">P</span> Pavel only &nbsp;·&nbsp;
+     <span class="tag tag-c">carries over</span> buy once, lasts several weeks</p>
+</footer>
+
+<script>
+  const KEY = 'fodmap-shop-v1';
+  const boxes = [...document.querySelectorAll('input[type=checkbox]')];
+  const done = document.getElementById('done');
+  const all  = document.getElementById('all');
+  const fill = document.getElementById('fill');
+
+  boxes.forEach((b, i) => b.dataset.i = i);
+  all.textContent = boxes.length;
+
+  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  saved.forEach(i => { if (boxes[i]) boxes[i].checked = true; });
+
+  function sync() {
+    const on = boxes.filter(b => b.checked);
+    done.textContent = on.length;
+    fill.style.width = (on.length / boxes.length * 100) + '%';
+    localStorage.setItem(KEY, JSON.stringify(on.map(b => +b.dataset.i)));
+  }
+
+  boxes.forEach(b => b.addEventListener('change', sync));
+  document.getElementById('reset').addEventListener('click', () => {
+    boxes.forEach(b => b.checked = false);
+    sync();
+  });
+  sync();
+
+  // Offline support: register the service worker when served over http(s).
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+
+</body>
+</html>
